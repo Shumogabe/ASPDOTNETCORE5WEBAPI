@@ -22,10 +22,10 @@ namespace WebAPI
             {
                 entity.ToTable("Accounts");
                 entity.HasKey(ac => ac.Id);
-                entity.Property(ac => ac.Email).IsRequired();
                 entity.Property(ac => ac.Name).IsRequired().HasMaxLength(100);
-                entity.Property(ac => ac.Password).IsRequired().HasMaxLength(100);
                 entity.Property(ac => ac.Username).IsRequired().HasMaxLength(100);
+                entity.Property(ac => ac.Password).IsRequired().HasMaxLength(100);
+                entity.Property(ac => ac.Email).IsRequired().HasMaxLength(100);
                 entity.HasIndex(ac => ac.Username).IsUnique();
             });
 

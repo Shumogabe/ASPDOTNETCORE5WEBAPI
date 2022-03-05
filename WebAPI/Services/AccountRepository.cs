@@ -9,6 +9,7 @@ namespace WebAPI.Services
     public class AccountRepository : IAccountRepository
     {
         private readonly MyDbContext _context;
+
         public AccountRepository(MyDbContext context)
         {
             _context = context;
@@ -91,5 +92,24 @@ namespace WebAPI.Services
             _account.Password = account.Password;
             _context.SaveChanges();
         }
+        public Account Login(string username, string password)
+        {
+            var account = _context.Accounts.SingleOrDefault(x => x.Username == username && x.Password == password);
+            if (account != null)
+            {
+                return new Account
+                {
+                    Id = account.Id,
+                    Name = account.Name,
+                    Phone = account.Phone,
+                    Email = account.Email,
+                    Level = account.Level,
+                    Username = account.Username,
+                    Password = account.Password,
+                };
+            }
+            return null;
+        }
+
     }
 }

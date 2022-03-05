@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using WebAPI.Models;
@@ -50,6 +51,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPost]
+        [Authorize]
         public IActionResult Add(NewsModel newsModel)
         {
             try
@@ -62,6 +64,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Update(Guid id, Models.News news)
         {
             if (id != news.Id)
@@ -79,6 +82,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(Guid id)
         {
             try

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using WebAPI.Models;
@@ -49,6 +50,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPost]
+        [Authorize]
         public IActionResult Add(Category_DocumentsModel category_DocumentsModel)
         {
             try
@@ -61,6 +63,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Update(Guid id, Category_Documents category_Documents)
         {
             if (id != category_Documents.Id)
@@ -78,6 +81,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(Guid id)
         {
             try

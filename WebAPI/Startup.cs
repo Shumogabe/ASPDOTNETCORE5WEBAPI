@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -7,11 +8,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using WebAPI.Models;
 using WebAPI.Services;
 
 namespace WebAPI
@@ -32,12 +36,37 @@ namespace WebAPI
                 option.UseSqlServer(Configuration.GetConnectionString("MyDB"));
             });
 
+
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<ICategory_DocumentsRepository, Category_DocumentsRepository>();
             services.AddScoped<ICategory_NewsRepository, Category_NewsRepository>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<INewsRepository, NewsRepository>();
             services.AddScoped<IQuestionRepository, QuestionRepository>();
+
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+
+            var secretKey = Configuration["AppSettings:SecretKey"];
+            var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
+
+            // Với web thường dùng cookiebear nhưng api thì dùng jwt
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(opt =>
+            {
+                opt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    //tự cấp token
+                    ValidateIssuer = false, // Nếu có dịch vụ thì để true và truyền đừng dẫn
+                    ValidateAudience = false,
+
+                    //ký vào token
+                    ValidateIssuerSigningKey = true,
+                    // Dùng thuật toán đối xứng ngoài ra còn rất nhiểu thuật toán khác
+                    IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
+
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -59,6 +88,8 @@ namespace WebAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

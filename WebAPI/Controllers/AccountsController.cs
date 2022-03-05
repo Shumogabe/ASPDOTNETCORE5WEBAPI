@@ -3,6 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using WebAPI.Models;
 using WebAPI.Services;
+using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebAPI.Controllers
 {
@@ -12,9 +18,12 @@ namespace WebAPI.Controllers
     {
         private readonly IAccountRepository _accountRepository;
 
-        public AccountsController(IAccountRepository accountRepository)
+        private readonly AppSettings _appSettings;
+
+        public AccountsController(IAccountRepository accountRepository, IOptionsMonitor<AppSettings> optionsMonitor)
         {
             _accountRepository = accountRepository;
+            _appSettings = optionsMonitor.CurrentValue;
         }
         [HttpGet]
         public IActionResult GetAll()
@@ -49,6 +58,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPost]
+        [Authorize]
         public IActionResult Add(AccountModel accountModel)
         {
             try
@@ -61,6 +71,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPut("{id}")]
+        [Authorize]
         public IActionResult Update(Guid id, Account account)
         {
             if (id != account.Id)
@@ -78,6 +89,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpDelete("{id}")]
+        [Authorize]
         public IActionResult Delete(Guid id)
         {
             try
@@ -89,6 +101,58 @@ namespace WebAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+        }
+
+        [HttpPost("Login")]
+        public IActionResult Validate(LoginModel model)
+        {
+            var user = _accountRepository.Login(model.Username, model.Password);
+            if (user == null) //không đúng
+            {
+                return Ok(new ApiResponse
+                {
+                    Success = false,
+                    Message = "Invalid username/password"
+                });
+            }
+
+            //cấp token
+
+            return Ok(new ApiResponse
+            {
+                Success = true,
+                Message = "Authenticate success",
+                //Data = GenerateToken(user)
+                Data = user
+            });
+        }
+        private string GenerateToken(Account account)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+
+            var secretKeyBytes = Encoding.UTF8.GetBytes(_appSettings.SecretKey);
+
+            var tokenDescription = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[] {
+                    new Claim(ClaimTypes.Email, account.Email),
+                    new Claim(ClaimTypes.Name, account.Name),
+                    new Claim("UserName", account.Username),
+                    new Claim("Level", account.Level.ToString()),
+                    new Claim("Id", account.Id.ToString()),
+
+                    //roles
+
+                    new Claim("TokenId", account.Id.ToString())
+                }),
+                // Thời gian hết hạn
+                Expires = DateTime.UtcNow.AddMinutes(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha512Signature)
+            };
+
+            var token = jwtTokenHandler.CreateToken(tokenDescription);
+
+            return jwtTokenHandler.WriteToken(token);
         }
     }
 }
