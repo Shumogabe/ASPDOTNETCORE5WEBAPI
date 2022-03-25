@@ -11,7 +11,7 @@ namespace WebAPI.Services
     {
         private readonly MyDbContext _context;
 
-        public static int PAGE_SIZE { get; set; } = 3;
+        //public static int PAGE_SIZE { get; set; } = 3;
 
         public DocumentRepository(MyDbContext context)
         {
@@ -51,7 +51,7 @@ namespace WebAPI.Services
             }
         }
 
-        public List<Document> GetAll(string search, int page = 1)
+        public List<Document> GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
             //var documents = _context.Documents.Select(x => new Document
             //{
@@ -64,10 +64,13 @@ namespace WebAPI.Services
             //});
             //return documents.ToList();
 
-            var allProducts = _context.Documents.AsQueryable();
+            var allProducts = _context.Documents.Include(i => i.Categories_Documents).AsQueryable();
             if (!string.IsNullOrEmpty(search))
             {
-                allProducts = allProducts.Where(x => x.Num_of_text.Contains(search) || x.Title.Contains(search) || x.CreatedDate.Contains(search));
+                allProducts = allProducts.Where(x => x.Num_of_text.Contains(search) ||
+                                                     x.Title.Contains(search) ||
+                                                     x.Categories_Documents.Title.Contains(search) ||
+                                                     x.CreatedDate.Contains(search));
             }
 
             var result = PaginatedList<Documents>.Create(allProducts, page, PAGE_SIZE);

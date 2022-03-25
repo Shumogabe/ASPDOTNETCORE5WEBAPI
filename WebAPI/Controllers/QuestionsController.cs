@@ -18,11 +18,11 @@ namespace WebAPI.Controllers
             _questionRepository = questionRepository;
         }
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
             try
             {
-                return Ok(_questionRepository.GetAll());
+                return Ok(_questionRepository.GetAll(search, PAGE_SIZE, page));
             }
             catch
             {
@@ -50,7 +50,6 @@ namespace WebAPI.Controllers
             }
         }
         [HttpPost]
-        [Authorize]
         public IActionResult Add(QuestionModel questionModel)
         {
             try

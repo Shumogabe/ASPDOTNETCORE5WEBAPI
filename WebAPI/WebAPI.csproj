@@ -22,6 +22,8 @@
   <ItemGroup>
     <Folder Include="Helpers\" />
     <Folder Include="Migrations\" />
+    <Folder Include="Images\" />
+    <Folder Include="Files\" />
   </ItemGroup>
 
 </Project>

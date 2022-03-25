@@ -6,7 +6,7 @@ namespace WebAPI.Services
 {
     public interface IAccountRepository
     {
-        List<Account> GetAll();
+        List<Account> GetAll(string search, int PAGE_SIZE = 3, int page = 1);
         Account GetById(Guid id);
         Account Add(AccountModel accountModel);
         void Update(Account account);

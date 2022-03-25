@@ -47,9 +47,32 @@ namespace WebAPI.Services
                 _context.SaveChanges();
             }
         }
-        public List<Account> GetAll()
+        public List<Account> GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
-            var accounts = _context.Accounts.Select(x => new Account
+            //var accounts = _context.Accounts.Select(x => new Account
+            //{
+            //    Id = x.Id,
+            //    Name = x.Name,
+            //    Phone = x.Phone,
+            //    Email = x.Email,
+            //    Level = x.Level,
+            //    Username = x.Username,
+            //    Password = x.Password,
+            //});
+            //return accounts.ToList();
+
+            var allProducts = _context.Accounts.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                allProducts = allProducts.Where(x => x.Name.Contains(search) ||
+                                                     x.Phone.Contains(search) ||
+                                                     x.Email.Contains(search) ||
+                                                     x.Level.ToString().Contains(search));
+            }
+
+            var result = PaginatedList<Accounts>.Create(allProducts, page, PAGE_SIZE);
+
+            return result.Select(x => new Account
             {
                 Id = x.Id,
                 Name = x.Name,
@@ -58,8 +81,7 @@ namespace WebAPI.Services
                 Level = x.Level,
                 Username = x.Username,
                 Password = x.Password,
-            });
-            return accounts.ToList();
+            }).ToList();
         }
 
         public Account GetById(Guid id)

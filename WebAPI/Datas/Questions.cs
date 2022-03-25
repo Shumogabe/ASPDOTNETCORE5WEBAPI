@@ -11,5 +11,7 @@ namespace WebAPI.Datas
         public string Title { get; set; }
         [Column(TypeName = "ntext")] 
         public string Question { get; set; }
+        [Column(TypeName = "ntext")]
+        public string Answer { get; set; }
     }
 }

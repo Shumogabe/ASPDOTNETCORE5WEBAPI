@@ -26,11 +26,12 @@ namespace WebAPI.Controllers
             _appSettings = optionsMonitor.CurrentValue;
         }
         [HttpGet]
-        public IActionResult GetAll()
+        [Authorize]
+        public IActionResult GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
             try
             {
-                return Ok(_accountRepository.GetAll());
+                return Ok(_accountRepository.GetAll(search, PAGE_SIZE, page));
             }
             catch
             {
@@ -38,6 +39,7 @@ namespace WebAPI.Controllers
             }
         }
         [HttpGet("{id}")]
+        [Authorize]
         public IActionResult GetById(Guid id)
         {
             try
@@ -122,8 +124,7 @@ namespace WebAPI.Controllers
             {
                 Success = true,
                 Message = "Authenticate success",
-                //Data = GenerateToken(user)
-                Data = user
+                Data = GenerateToken(user)
             });
         }
         private string GenerateToken(Account account)
@@ -135,9 +136,9 @@ namespace WebAPI.Controllers
             var tokenDescription = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] {
-                    new Claim(ClaimTypes.Email, account.Email),
                     new Claim(ClaimTypes.Name, account.Name),
-                    new Claim("UserName", account.Username),
+                    new Claim(ClaimTypes.Email, account.Email),
+                    new Claim("Phone", account.Phone),
                     new Claim("Level", account.Level.ToString()),
                     new Claim("Id", account.Id.ToString()),
 
@@ -146,8 +147,10 @@ namespace WebAPI.Controllers
                     new Claim("TokenId", account.Id.ToString())
                 }),
                 // Thời gian hết hạn
-                Expires = DateTime.UtcNow.AddMinutes(1),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha512Signature)
+                // DateTime.UtcNow. : lấy múi giờ GMT
+                // Mặc định thời điểm hết hạn token sẽ trễ hơn 5ph so với chỉ định
+                Expires = DateTime.UtcNow.AddMinutes(120),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha256)
             };
 
             var token = jwtTokenHandler.CreateToken(tokenDescription);

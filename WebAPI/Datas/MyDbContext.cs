@@ -8,6 +8,7 @@ namespace WebAPI
         public MyDbContext(DbContextOptions options) : base(options) { }
 
         #region DbSet
+        public DbSet<Access> Access { get; set; }
         public DbSet<Accounts> Accounts { get; set; }
         public DbSet<Categories_Documents> Categories_Documents { get; set; }
         public DbSet<Categories_News> Categories_News { get; set; }
@@ -18,6 +19,13 @@ namespace WebAPI
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Access>(entity =>
+            {
+                entity.ToTable("Access");
+                entity.HasKey(ac => ac.Id);
+                entity.Property(ac => ac.Count).IsRequired();
+
+            });
             modelBuilder.Entity<Accounts>(entity =>
             {
                 entity.ToTable("Accounts");

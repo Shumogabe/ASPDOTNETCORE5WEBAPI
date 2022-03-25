@@ -18,11 +18,11 @@ namespace WebAPI.Controllers
             _category_DocumentsRepository = category_DocumentsRepository;
         }
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
             try
             {
-                return Ok(_category_DocumentsRepository.GetAll());
+                return Ok(_category_DocumentsRepository.GetAll(search, PAGE_SIZE, page));
             }
             catch
             {

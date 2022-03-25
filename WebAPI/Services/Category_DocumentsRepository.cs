@@ -40,14 +40,28 @@ namespace WebAPI.Services
             }
         }
 
-        public List<Category_Documents> GetAll()
+        public List<Category_Documents> GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
-            var categories_Documents = _context.Categories_Documents.Select(x => new Category_Documents
+            //var categories_Documents = _context.Categories_Documents.Select(x => new Category_Documents
+            //{
+            //    Id = x.Id,
+            //    Title = x.Title,
+            //});
+            //return categories_Documents.ToList();
+
+            var allProducts = _context.Categories_Documents.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                allProducts = allProducts.Where(x => x.Title.Contains(search));
+            }
+
+            var result = PaginatedList<Categories_Documents>.Create(allProducts, page, PAGE_SIZE);
+
+            return result.Select(x => new Category_Documents
             {
                 Id = x.Id,
                 Title = x.Title,
-            });
-            return categories_Documents.ToList();
+            }).ToList();
         }
 
         public Category_Documents GetById(Guid id)

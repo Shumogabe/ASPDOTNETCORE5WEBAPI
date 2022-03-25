@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -18,11 +19,11 @@ namespace WebAPI.Controllers
             _category_NewsRepository = category_NewsRepository;
         }
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
             try
             {
-                return Ok(_category_NewsRepository.GetAll());
+                return Ok(_category_NewsRepository.GetAll(search, PAGE_SIZE, page));
             }
             catch
             {

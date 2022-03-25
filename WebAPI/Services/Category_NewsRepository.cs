@@ -40,14 +40,28 @@ namespace WebAPI.Services
             }
         }
 
-        public List<Category_News> GetAll()
+        public List<Category_News> GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
-            var categories_News = _context.Categories_News.Select(c => new Category_News
+            //var categories_News = _context.Categories_News.Select(c => new Category_News
+            //{
+            //    Id = c.Id,
+            //    Title = c.Title,
+            //});
+            //return categories_News.ToList();
+
+            var allProducts = _context.Categories_News.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
             {
-                Id = c.Id,
-                Title = c.Title,
-            });
-            return categories_News.ToList();
+                allProducts = allProducts.Where(x => x.Title.Contains(search));
+            }
+
+            var result = PaginatedList<Categories_News>.Create(allProducts, page, PAGE_SIZE);
+
+            return result.Select(x => new Category_News
+            {
+                Id = x.Id,
+                Title = x.Title,
+            }).ToList();
         }
 
         public Category_News GetById(Guid id)

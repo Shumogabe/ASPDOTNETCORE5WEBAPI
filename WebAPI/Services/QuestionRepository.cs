@@ -45,17 +45,38 @@ namespace WebAPI.Services
             }
         }
 
-        public List<Question> GetAll()
+        public List<Question> GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
-            var questions = _context.Questions.Select(x => new Question
+            //var questions = _context.Questions.Select(x => new Question
+            //{
+            //    Id = x.Id,
+            //    Name = x.Name,
+            //    Email = x.Email,
+            //    Title = x.Title,
+            //    Question = x.Question,
+            //});
+            //return questions.ToList();
+
+            var allProducts = _context.Questions.AsQueryable();
+            if (!string.IsNullOrEmpty(search))
+            {
+                allProducts = allProducts.Where(x => x.Name.Contains(search) ||
+                                                     x.Email.Contains(search) ||
+                                                     x.Title.Contains(search) ||
+                                                     x.Question.Contains(search));
+            }
+
+            var result = PaginatedList<Questions>.Create(allProducts, page, PAGE_SIZE);
+
+            return result.Select(x => new Question
             {
                 Id = x.Id,
                 Name = x.Name,
                 Email = x.Email,
                 Title = x.Title,
                 Question = x.Question,
-            });
-            return questions.ToList();
+                Answer = x.Answer,
+            }).ToList();
         }
 
         public Question GetById(Guid id)
@@ -70,6 +91,7 @@ namespace WebAPI.Services
                     Email = question.Email,
                     Title = question.Title,
                     Question = question.Question,
+                    Answer = question.Answer,
                 };
             }
             return null;
@@ -82,6 +104,7 @@ namespace WebAPI.Services
             _question.Email = question.Email;
             _question.Title = question.Title;
             _question.Question = question.Question;
+            _question.Answer = question.Answer;
             _context.SaveChanges();
         }
     }

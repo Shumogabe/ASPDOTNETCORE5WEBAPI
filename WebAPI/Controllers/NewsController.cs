@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.IO;
 using WebAPI.Models;
 using WebAPI.Services;
 
@@ -12,17 +14,18 @@ namespace WebAPI.Controllers
     public class NewsController : ControllerBase
     {
         private readonly INewsRepository _newsRepository;
-
-        public NewsController(INewsRepository newsRepository)
+        private readonly IWebHostEnvironment _env;
+        public NewsController(INewsRepository newsRepository, IWebHostEnvironment env)
         {
             _newsRepository = newsRepository;
+            _env = env;
         }
         [HttpGet]
-        public IActionResult GetAll(string search, int page = 1)
+        public IActionResult GetAll(string search, int PAGE_SIZE = 3, int page = 1)
         {
             try
             {
-                var result = _newsRepository.GetAll(search, page);
+                var result = _newsRepository.GetAll(search, PAGE_SIZE, page);
                 return Ok(result);
             }
             catch
@@ -95,5 +98,31 @@ namespace WebAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
+        [HttpPost("SaveFile")]
+        [Authorize]
+        public IActionResult SaveFile()
+        {
+            try
+            {
+                var httpRequest = Request.Form;
+                var postedFile = httpRequest.Files[0];
+                string filename = postedFile.FileName;
+                var physicalPath = _env.ContentRootPath + "/Images/" + filename;
+
+                using (var stream = new FileStream(physicalPath, FileMode.Create))
+                {
+                    postedFile.CopyTo(stream);
+                }
+
+                return new JsonResult(filename);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+
+                //return new JsonResult("03092020- BT va Dai su Italia.png");
+            }
+        }
+        
     }
 }
